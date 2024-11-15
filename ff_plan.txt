@@ -1,0 +1,44 @@
+
+ff: parsing domain file
+domain 'PICK_AND_PLACE' defined
+ ... done.
+ff: parsing problem file
+problem 'PICK_AND_PLACE_PROBLEM' defined
+ ... done.
+
+
+no metric specified. plan length assumed.
+
+checking for cyclic := effects --- OK.
+
+ff: search configuration is EHC, if that fails then  best-first on 1*g(s) + 5*h(s) where
+    metric is  plan length
+
+Cueing down from goal distance:    8 into depth [1]
+                                   7            [1]
+                                   6            [1]
+                                   5            [1]
+                                   4            [1][2]
+                                   2            [1][2]
+                                   0            
+
+ff: found legal plan as follows
+
+step    0: PICK PURPLE1
+        1: PLACE PURPLE1 BLUE1
+        2: PICK PURPLE2
+        3: PLACE PURPLE2 BLUE2
+        4: PICK YELLOW2
+        5: PLACE YELLOW2 PURPLE1
+        6: PICK YELLOW1
+        7: PLACE YELLOW1 PURPLE2
+     
+
+time spent:    0.00 seconds instantiating 99 easy, 0 hard action templates
+               0.00 seconds reachability analysis, yielding 109 facts and 99 actions
+               0.00 seconds creating final representation with 109 relevant facts, 0 relevant fluents
+               0.00 seconds computing LNF
+               0.00 seconds building connectivity graph
+               0.00 seconds searching, evaluating 27 states, to a max depth of 2
+               0.00 seconds total time
+
