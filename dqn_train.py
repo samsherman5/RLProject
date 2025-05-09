@@ -7,10 +7,7 @@ import gymnasium as gym
 from stable_baselines3 import DQN
 
 
-high_resolution = False
-high_frame_rate = True
-
-pickplaceplanner = PickPlaceEnv(render=False, high_res=high_resolution, high_frame_rate=high_frame_rate)
+pickplaceplanner = PickPlaceEnv(render=False, high_res=False, high_frame_rate=False)
 obj_list = ['blue1 block', 'red block']
 
 # Put obj_list in twice so that the stack order is the same as the object list
@@ -33,7 +30,7 @@ model.learn(total_timesteps=2500)
 model.save("sb3_dqn_policy")
 print("Policy network saved to sb3_dqn_policy.zip")
 
-#Old code for training custom DQN agent
+# Old code for training custom DQN agent
 
 # num_episodes = 600
 # policy = DQNAgent(env.n_observations(), env.n_actions(), memory_capacity=10000, gamma=.99, lr=1e-4, batch_size=128)
