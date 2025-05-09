@@ -57,6 +57,7 @@ CORNER_POS = {
 
 PIXEL_SIZE = 0.00267857
 BOUNDS = np.float32([[-0.3, 0.3], [-0.8, -0.2], [0, 0.15]])  # X Y Z
+EE_BOUNDS = np.float32([[-0.25, 0.25], [-0.75, -0.25], [0.00, 0.34]])  # X Y Z
 
 
 
@@ -176,8 +177,8 @@ class PickPlaceEnv():
     # Configure and start PyBullet.
     # python3 -m pybullet_utils.runServer
     # pybullet.connect(pybullet.SHARED_MEMORY)  # pybullet.GUI for local GUI.
-    # pybullet.connect(pybullet.DIRECT)  # pybullet.GUI for local GUI.
-    pybullet.connect(pybullet.GUI)  # pybullet.GUI for local GUI.
+    pybullet.connect(pybullet.DIRECT)  # pybullet.GUI for local GUI.
+    # pybullet.connect(pybullet.GUI)  # pybullet.GUI for local GUI.
     
     pybullet.configureDebugVisualizer(pybullet.COV_ENABLE_GUI, 0)
     pybullet.setPhysicsEngineParameter(enableFileCaching=0)
@@ -200,7 +201,6 @@ class PickPlaceEnv():
     pybullet.resetSimulation(pybullet.RESET_USE_DEFORMABLE_WORLD)
     pybullet.setGravity(0, 0, -9.8)
     self.cache_video = []
-    print("a")
 
     # Temporarily disable rendering to load URDFs faster.
     pybullet.configureDebugVisualizer(pybullet.COV_ENABLE_RENDERING, 0)
@@ -274,7 +274,7 @@ class PickPlaceEnv():
     # record object positions at reset
     self.init_pos = {name: self.get_obj_pos(name) for name in object_list}
 
-    return self.get_observation()
+    return None
 
   def servoj(self, joints):
     """Move to target joint positions with position control."""
@@ -331,7 +331,7 @@ class PickPlaceEnv():
 
     # Pick up object.
     self.gripper.activate()
-    for _ in range(240):
+    for t in range(240):
       self.step_sim_and_render()
     while np.linalg.norm(hover_xyz - ee_xyz) > 0.01:
       self.movep(hover_xyz)
@@ -341,11 +341,11 @@ class PickPlaceEnv():
     for _ in range(50):
       self.step_sim_and_render()
 
-    observation = self.get_observation()
+    #observation = self.get_observation()
     reward = self.get_reward()
     done = False
     info = {}
-    return observation, reward, done, info
+    return None, reward, done, info
 
   def place(self, obj_to_place):
     """Do place motion primitive."""
@@ -371,7 +371,7 @@ class PickPlaceEnv():
       for _ in range(3):
         self.step_sim_and_render()
     self.gripper.release()
-    for _ in range(240):
+    for t in range(240):
       self.step_sim_and_render()
     place_xyz[2] = 0.2
     ee_xyz = self.get_ee_pos()
@@ -385,11 +385,11 @@ class PickPlaceEnv():
       self.step_sim_and_render()
       ee_xyz = self.get_ee_pos()
 
-    observation = self.get_observation()
+    #observation = self.get_observation()
     reward = self.get_reward()
     done = False
     info = {}
-    return observation, reward, done, info
+    return None, reward, done, info
 
   def putdown(self):
     obj_pos = []
@@ -413,7 +413,7 @@ class PickPlaceEnv():
       self.movep(place_xyz)
       self.step_sim_and_render()
       ee_xyz = self.get_ee_pos()
-    print("4:", self.hand_empty())
+    #print("4:", self.hand_empty())
 
     # Place down object.
     while (not self.gripper.detect_contact()) and (place_xyz[2] > 0.03):
@@ -422,7 +422,7 @@ class PickPlaceEnv():
       for _ in range(3):
         self.step_sim_and_render()
     self.gripper.release()
-    for _ in range(240):
+    for t in range(240):
       self.step_sim_and_render()
     place_xyz[2] = 0.2
     ee_xyz = self.get_ee_pos()
@@ -436,11 +436,11 @@ class PickPlaceEnv():
       self.step_sim_and_render()
       ee_xyz = self.get_ee_pos()
 
-    observation = self.get_observation()
+    #observation = self.get_observation()
     reward = self.get_reward()
     done = False
     info = {}
-    return observation, reward, done, info
+    return None, reward, done, info
 
     
         
@@ -462,7 +462,7 @@ class PickPlaceEnv():
 
     interval = 40 if self.high_frame_rate else 60
     # Render current image at 8 FPS.
-    if self.sim_step % interval == 0 and self.render:
+    if self.render and self.sim_step % interval == 0:
       self.cache_video.append(self.get_camera_image())
 
   def get_camera_image(self):

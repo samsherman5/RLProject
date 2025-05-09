@@ -1,58 +1,84 @@
 from env import PickPlaceEnv
 import numpy as np
+from HighLevelEnv import HighLevelEnv
+from PickPlaceDQN import DQNAgent
+import torch
+import gymnasium as gym
+from stable_baselines3 import DQN
 
-num_blocks = 4
-num_bowls = 4
+
 high_resolution = False
-high_frame_rate = False
-# 2 blue, 2 yellow, 1 red, 2 green, and 2 purple blocks
-ALL_BLOCKS = ['blue1 block', 'blue2 block', 'yellow1 block', 'yellow2 block', 'green1 block', 'green2 block', 'purple1 block', 'purple2 block', 'red block']
-ALL_BOWLS = ['blue1 bowl', 'yellow1 bowl', 'green1 bowl', 'purple1 bowl']
+high_frame_rate = True
 
-env = PickPlaceEnv(render=True, high_res=high_resolution, high_frame_rate=high_frame_rate)
-block_list = np.random.choice(ALL_BLOCKS, size=num_blocks, replace=False).tolist()
-bowl_list = np.random.choice(ALL_BOWLS, size=num_bowls, replace=False).tolist()
+pickplaceplanner = PickPlaceEnv(render=False, high_res=high_resolution, high_frame_rate=high_frame_rate)
+obj_list = ['blue1 block', 'red block']
 
-obj_list = ALL_BOWLS
+env = HighLevelEnv(pickplaceplanner, obj_list, obj_list)
 
-_ = env.reset(obj_list)
+model = DQN("MlpPolicy", env, 
+                            verbose=1,
+                         buffer_size=10000, 
+                         target_update_interval=100,
+                         exploration_fraction=0.40,
+                         exploration_initial_eps=.9, 
+                         exploration_final_eps=.05, 
+                         learning_rate=1e-3, 
+                         batch_size=128, 
+                         gamma=0.92, 
+                         tensorboard_log="./dqn_tensorboard/",
+                         device="cuda")
+model.learn(total_timesteps=2500)
+model.save("sb3_dqn_policy")
+print("Policy network saved to sb3_dqn_policy.zip")
 
-# Example to get pose:
-# print("get obj pose:", env.get_obj_pos(block_list[0]))
-print("get obj pose:", env.get_obj_pos(bowl_list[0]))
+# num_episodes = 600
+# policy = DQNAgent(env.n_observations(), env.n_actions(), memory_capacity=10000, gamma=.99, lr=1e-4, batch_size=128)
+# episode_durations = []
+# episode_rewards = []
+# for i_episode in range(num_episodes):
+#     # Initialize the environment and get its state
+#     state = np.array(env.reset()).flatten()
+#     state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+#     t = 0
+#     ep_reward = 0
+#     while True:
+#         action = policy.select_action(state)
+#         observation, reward, done = env.step(action.item())
+#         ep_reward += reward
+#         reward = torch.tensor([reward], device=device)
 
-obj_predicates = {obj_list[i]: {} for i in range(len(obj_list))}
+#         if done:
+#             next_state = None
+#         else:
+#             next_state = torch.tensor(np.array(observation), dtype=torch.float32, device=device).unsqueeze(0)
 
-# Get predicate values:
-for count, obj in enumerate(obj_list):
-  obj_predicates[obj]['is_on_table'] = env.on_table(obj)
-  obj_predicates[obj]['is_clear'] = env.clear(obj)
+#         # Store the transition in memory
+#         policy.memory.push(state, action, next_state, reward)
 
-# Check if gripper is empty:
-print("is gripper empty: ", env.hand_empty())
+#         # Move to the next state
+#         state = next_state
 
-print("obj predicates:", obj_predicates)
+#         # Perform one step of the optimization (on the policy network)
+#         policy.optimize_model()
 
-# # Example to pick up object: (Argument is which object to pick)
-# env.pick(block_list[0])  
+#         # Soft update of the target network's weights
+#         # θ′ ← τ θ + (1 −τ )θ′
+#         target_net_state_dict = policy.target_net.state_dict()
+#         policy_net_state_dict = policy.policy_net.state_dict()
+#         for key in policy_net_state_dict:
+#             target_net_state_dict[key] = policy_net_state_dict[key]*(.01) + target_net_state_dict[key]*(1-.01)
+#         policy.target_net.load_state_dict(target_net_state_dict)
+#         t += 1
+#         if done:
+#             episode_rewards.append(ep_reward)
+#             episode_durations.append(t)
+#             print(f"Episode {i_episode} finished after {t} timesteps with reward {ep_reward}")
+#             break
 
-# # Example to place object: (Argument is where to place. No notion of which object to place because we assume the object is already in hand)
-# env.place(block_list[1])  
+# # save episode durations and rewards to file
+# np.save('episode_durations.npy', episode_durations)
+# np.save('episode_rewards.npy', episode_rewards)
 
-# # Example to place block om table: (No arguments. No notion of which object to place because we assume the object is already in hand)
-env.pick(obj_list[0])  
-env.putdown()  
-
-
-## Check if check_success_works
-# env.pick(obj_list[2])
-# env.place(obj_list[0])
-# env.pick(obj_list[6])
-# env.place(obj_list[2])
-
-# env.pick(obj_list[3])
-# env.place(obj_list[1])
-# env.pick(obj_list[7])
-# env.place(obj_list[3])
-
-print("final success:", env.check_success())
+# print('Training Complete')
+# torch.save(policy.policy_net.state_dict(), "policy_net.pth")
+# print("Policy network saved to policy_net.pth")
