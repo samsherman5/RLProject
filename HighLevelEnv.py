@@ -122,7 +122,7 @@ class HighLevelEnv(EnvWrapper):
     def get_observation(self):
         """
         Get the current observation (state representation).
-        Observation: np.array of [Δx, Δy, Δz] for each block
+        Observation: np.array of [Δx, Δy, Δz] for each block + 0/1 for gripper state
         :return: Current state as an array or dict
         """
         ee_pos = self.baseEnv.get_ee_pos()
