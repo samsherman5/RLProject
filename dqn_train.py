@@ -15,7 +15,7 @@ obj_list = ['blue1 block', 'red block']
 env = HighLevelEnv(pickplaceplanner, obj_list, obj_list)
 
 model = DQN("MlpPolicy", env, 
-                            verbose=1,
+                         verbose=1,
                          buffer_size=10000, 
                          target_update_interval=100,
                          exploration_fraction=0.40,

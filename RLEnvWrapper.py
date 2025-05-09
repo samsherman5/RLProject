@@ -17,7 +17,6 @@ class EnvWrapper(gym.Env, ABC):
         self.stack_order = stack_order
         self.baseEnv.reset(self.obj_list)
 
-    @abstractmethod
     def n_observations(self) -> int:
         """
         Get the number of observations in the environment.
@@ -25,8 +24,7 @@ class EnvWrapper(gym.Env, ABC):
         :return: Number of observations
         """
         pass
-        
-    @abstractmethod
+
     def n_actions(self) -> int:
         """
         Get the number of actions available in the environment.
